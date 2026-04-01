@@ -1,7 +1,7 @@
-import React, { useReducer } from "./libs/react";
+import React, { useReducer, useContext, useState } from "./libs/react";
 import ReactDOM from "./libs/react-dom";
 
-// import React, { useReducer } from "react";
+// import React, { createContext, useContext, useReducer } from "react";
 // import ReactDOM from "react-dom";
 
 const INCREMENT = "INCREMENT";
@@ -22,12 +22,28 @@ const reducer = (state, action) => {
   }
 };
 
+const AppContext = React.createContext();
+const ColorContext = React.createContext();
+
 function App() {
   const [state, dispatch] = useReducer(reducer, { number: 0 });
+  const [textColor, setTextColor] = useState("#1890ff");
 
   return (
+    <AppContext.Provider value={{ state, dispatch }}>
+      <ColorContext.Provider value={{ textColor, setTextColor }}>
+        <Counter />
+      </ColorContext.Provider>
+    </AppContext.Provider>
+  );
+}
+
+function Counter() {
+  const { state, dispatch } = useContext(AppContext);
+  const { textColor, setTextColor } = useContext(ColorContext);
+  return (
     <div>
-      <h1>{state.number}</h1>
+      <h1 style={{ color: textColor }}>{state.number}</h1>
       <button
         onClick={() => {
           dispatch({ type: INCREMENT });
@@ -42,24 +58,15 @@ function App() {
       >
         DECREMENT
       </button>
+      <button
+        onClick={() => {
+          setTextColor("#ff0000");
+        }}
+      >
+        CHANGE COLOR
+      </button>
     </div>
   );
 }
-
-// function Counter() {
-//   const [num, setNum] = useState(0);
-//   function add() {
-//     setNum(100);
-//     setTimeout(() => {
-//       setNum(num + 1);
-//     }, 1000);
-//   }
-//   return (
-//     <div>
-//       <h1>{num}</h1>
-//       <button onClick={add}>Click</button>
-//     </div>
-//   );
-// }
 
 ReactDOM.render(<App />, document.getElementById("root"));

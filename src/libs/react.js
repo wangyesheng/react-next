@@ -47,23 +47,20 @@ function createRef() {
 }
 
 function createContext(defaultValue) {
-  const context = {
-    Provider,
-    Consumer,
-  };
-
-  Provider._value = defaultValue || {};
-
   function Provider(props) {
     Provider._value = Object.assign(Provider._value, props.value);
     return props.children;
   }
+  Provider._value = defaultValue || {};
 
   function Consumer(props) {
     return props.children(Provider._value);
   }
 
-  return context;
+  return {
+    Provider,
+    Consumer,
+  };
 }
 
 function cloneElement(element, newProps, ...newChildren) {
@@ -78,10 +75,6 @@ function cloneElement(element, newProps, ...newChildren) {
           : element.props.children,
     },
   };
-}
-
-function useContext(context) {
-  return context.Provider._value;
 }
 
 function forwardRef(FunctionComponent) {
@@ -104,7 +97,6 @@ export default {
   createContext,
   cloneElement,
   memo,
-  useContext,
   forwardRef,
   useImperativeHandle,
 };
@@ -114,6 +106,7 @@ export {
   useCallback,
   useMemo,
   useReducer,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,

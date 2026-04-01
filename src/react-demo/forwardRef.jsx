@@ -5,6 +5,7 @@ import ReactDOM from "./libs/react-dom";
 // import ReactDOM from "react-dom";
 
 function Child(props, childRef) {
+  // 将整个 input 实例都暴露出去
   return <input type="text" ref={childRef} />;
 }
 
@@ -12,6 +13,7 @@ const ForwordedChild = React.forwardRef(Child);
 
 function Child1(props, childRef) {
   const domRef = useRef();
+  // 自定义暴露给父组件的方法或属性
   React.useImperativeHandle(childRef, () => ({
     focus() {
       domRef.current.focus();

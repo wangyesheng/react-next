@@ -6,33 +6,33 @@ let hookStates = [],
   scheduleUpdate;
 
 export function useState(defaultValue) {
-  hookStates[hookIndex] =
-    hookStates[hookIndex] ||
-    (typeof defaultValue === "function" ? defaultValue() : defaultValue);
-
-  const currentIndex = hookIndex;
-  function setState(nextState) {
-    if (typeof nextState === "function") {
-      nextState = nextState(hookStates[currentIndex]);
-    }
-    // 此时 setState 与 currentIndex 形成了闭包，currentIndex 的值永远都是 useState 函数执行时 hookIndex 的值
-    // 闭包：函数+函数能访问的自由变量
-    hookStates[currentIndex] = nextState;
-    scheduleUpdate && scheduleUpdate();
-  }
-
-  return [hookStates[hookIndex++], setState];
+  return useReducer(null, defaultValue);
 }
 
 export function useReducer(reducer, defaultValue) {
   hookStates[hookIndex] =
-    hookStates[hookIndex] ||
-    (typeof defaultValue === "function" ? defaultValue() : defaultValue);
+    typeof hookStates[hookIndex] === "undefined"
+      ? typeof defaultValue === "function"
+        ? defaultValue()
+        : defaultValue
+      : hookStates[hookIndex];
+
   const currentIndex = hookIndex;
+
   function dispatch(action) {
-    hookStates[currentIndex] = reducer(hookStates[currentIndex], action);
+    if (reducer) {
+      const newState = reducer(hookStates[currentIndex], action);
+      hookStates[currentIndex] = newState;
+    } else {
+      hookStates[currentIndex] =
+        typeof action === "function"
+          ? action(hookStates[currentIndex])
+          : action;
+    }
+
     scheduleUpdate && scheduleUpdate();
   }
+
   return [hookStates[hookIndex++], dispatch];
 }
 
@@ -70,6 +70,10 @@ export function useCallback(callback, deps) {
     hookStates[hookIndex++] = [callback, deps];
     return callback;
   }
+}
+
+export function useContext(context) {
+  return context.Provider._value;
 }
 
 // 浏览器绘制之后执行
@@ -132,7 +136,6 @@ export function useRef(initialState) {
  * @param {*} container
  */
 function render(vdom, container) {
-  debugger;
   mount(vdom, container);
   scheduleUpdate = () => {
     hookIndex = 0;
